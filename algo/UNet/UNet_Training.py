@@ -19,6 +19,13 @@ def save_checkpoint(model, optimizer, epoch, loss, filepath):
         print(f"Folder created at {filepath}")
     torch.save(checkpoint, filepath)
 
+def get_image_set_breakdown (train_dir, val_dir, test_dir):
+        # Returns a list of image number included in training, validation and test set for future reference.
+    train_list = ["_".join(img_filename.split("_")[:2]) for img_filename in os.listdir(train_dir) if (img_filename.endswith(".nii.gz"))]
+    val_list = ["_".join(img_filename.split("_")[:2]) for img_filename in os.listdir(val_dir) if (img_filename.endswith(".nii.gz"))]
+    test_list = ["_".join(img_filename.split("_")[:2]) for img_filename in os.listdir(test_dir) if (img_filename.endswith(".nii.gz"))]
+    return train_list, val_list, test_list    
+
 def save_model_params (save_location, train_swi_dir, val_swi_dir, test_swi_dir,
                        patches_per_image, patch_size, queue_length, batch_size,
                        model_architecture, channels,

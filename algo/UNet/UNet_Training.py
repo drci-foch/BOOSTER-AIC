@@ -14,6 +14,9 @@ def save_checkpoint(model, optimizer, epoch, loss, filepath):
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss
     }
+    if not os.path.exists(filepath):
+        os.makedirs(filepath)
+        print(f"Folder created at {filepath}")
     torch.save(checkpoint, filepath)
 
 def save_model_params (save_location, train_swi_dir, val_swi_dir, test_swi_dir,

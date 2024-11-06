@@ -36,6 +36,9 @@ def save_model_params (save_location, train_swi_dir, val_swi_dir, test_swi_dir,
                 "train_image_numbers":train_list, "validation_image_numbers":val_list, "test_image_numbers":test_list
                 }
     
+    if not os.path.exists(save_location):
+        os.makedirs(save_location)
+        print(f"Folder created at {save_location}")
     with open(save_location, "w") as f:
         json.dump(model_params, f, ensure_ascii=False, indent=4)
 

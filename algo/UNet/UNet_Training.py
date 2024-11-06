@@ -14,9 +14,10 @@ def save_checkpoint(model, optimizer, epoch, loss, filepath):
         'optimizer_state_dict': optimizer.state_dict(),
         'loss': loss
     }
-    if not os.path.exists(filepath):
-        os.makedirs(filepath)
-        print(f"Folder created at {filepath}")
+    folder_path = os.path.dirname(filepath)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder created at {folder_path}")
     torch.save(checkpoint, filepath)
 
 def get_image_set_breakdown (train_dir, val_dir, test_dir):
@@ -42,10 +43,10 @@ def save_model_params (save_location, train_swi_dir, val_swi_dir, test_swi_dir,
                 "training_epochs":training_epochs,
                 "train_image_numbers":train_list, "validation_image_numbers":val_list, "test_image_numbers":test_list
                 }
-    
-    if not os.path.exists(save_location):
-        os.makedirs(save_location)
-        print(f"Folder created at {save_location}")
+    folder_path = os.path.dirname(save_location)
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder created at {folder_path}")
     with open(save_location, "w") as f:
         json.dump(model_params, f, ensure_ascii=False, indent=4)
 

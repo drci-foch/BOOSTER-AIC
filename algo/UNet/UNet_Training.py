@@ -102,7 +102,7 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
 
 # Training Function
 
-def train_model (model, loss, optimizer, train_patches_loader, val_patches_loader, num_epochs=10, starting_epoch=0, save_checkpoint_flag=False, load_from_checkpoint=False, save_checkpoint_location=None, load_checkpoint_location=None, display_loss=False):
+def train_model (model, loss, optimizer, train_patches_loader, val_patches_loader, num_epochs=10, starting_epoch=1, save_checkpoint_flag=False, load_from_checkpoint=False, save_checkpoint_location=None, load_checkpoint_location=None, display_loss=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if load_from_checkpoint:
         model_checkpoint = torch.load(load_checkpoint_location)
@@ -115,10 +115,10 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
         train_loss_history = []
         val_loss_history = []
     
-    for epoch in range(starting_epoch, num_epochs):
+    for epoch in range(starting_epoch, num_epochs+1):
         model.train()
         train_loss_value = 0
-        for patches_batch in tqdm.tqdm(train_patches_loader, desc=f"Training Epoch {epoch+1}/{num_epochs}"):
+        for patches_batch in tqdm.tqdm(train_patches_loader, desc=f"Training Epoch {epoch}/{num_epochs}"):
             images = patches_batch["swi_image"][tio.DATA]
             gt_masks = patches_batch["thrombus_label"][tio.DATA]
             images, gt_masks = images.to(device), gt_masks.to(device)
@@ -131,12 +131,12 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
             train_loss_value += train_loss.item()
         
         train_loss_value /= len(train_patches_loader)
-        print(f"Epoch {epoch+1}/{num_epochs}, Training Loss: {train_loss_value:.8f}")
+        print(f"Epoch {epoch}/{num_epochs}, Training Loss: {train_loss_value:.8f}")
         
         model.eval()
         val_loss_value = 0
         with torch.no_grad():
-            for patches_batch in tqdm.tqdm(val_patches_loader, desc=f"Validating Epoch {epoch+1}/{num_epochs}"):
+            for patches_batch in tqdm.tqdm(val_patches_loader, desc=f"Validating Epoch {epoch}/{num_epochs}"):
                 images = patches_batch["swi_image"][tio.DATA]
                 gt_masks = patches_batch["thrombus_label"][tio.DATA]
                 images, gt_masks = images.to(device), gt_masks.to(device)
@@ -146,7 +146,7 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
                 val_loss_value += val_loss.item()
 
         val_loss_value /= len(val_patches_loader)
-        print(f"Epoch {epoch+1}/{num_epochs}, Validation Loss: {val_loss_value:.8f}")
+        print(f"Epoch {epoch}/{num_epochs}, Validation Loss: {val_loss_value:.8f}")
 
         if display_loss:
             train_loss_history.append(train_loss_value)

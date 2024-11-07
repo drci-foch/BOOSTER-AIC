@@ -102,14 +102,20 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
 
 # Training Function
 
-def train_model (model, loss, optimizer, train_patches_loader, val_patches_loader, num_epochs=10, save_checkpoint_flag=False, checkpoint_location=None, display_loss=False):
+def train_model (model, loss, optimizer, train_patches_loader, val_patches_loader, num_epochs=10, starting_epoch=0, save_checkpoint_flag=False, load_from_checkpoint=False, save_checkpoint_location=None, load_checkpoint_location=None, display_loss=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if load_from_checkpoint:
+        model_checkpoint = torch.load(load_checkpoint_location)
+        model.load_state_dict(model_checkpoint["model_state_dict"])
+        optimizer.load_state_dict(model_checkpoint['optimizer_state_dict'])
+    
     model.to(device)
+    
     if display_loss:
         train_loss_history = []
         val_loss_history = []
     
-    for epoch in range(num_epochs):
+    for epoch in range(starting_epoch, num_epochs):
         model.train()
         train_loss_value = 0
         for patches_batch in tqdm.tqdm(train_patches_loader, desc=f"Training Epoch {epoch+1}/{num_epochs}"):
@@ -157,4 +163,4 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
             plt.show()
         
         if save_checkpoint_flag:
-            save_checkpoint(model, optimizer, epoch, loss, checkpoint_location)
+            save_checkpoint(model, optimizer, epoch, loss, save_checkpoint_location)

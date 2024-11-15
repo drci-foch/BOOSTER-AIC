@@ -105,7 +105,7 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
 def train_model (model, loss, optimizer, train_patches_loader, val_patches_loader, num_epochs=10, starting_epoch=1, save_checkpoint_flag=False, load_from_checkpoint=False, save_checkpoint_location=None, load_checkpoint_location=None, display_loss=False):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if load_from_checkpoint:
-        model_checkpoint = torch.load(load_checkpoint_location, map_location=device)
+        model_checkpoint = torch.load(load_checkpoint_location, map_location=device, weights_only=True)
         model.load_state_dict(model_checkpoint["model_state_dict"])
         optimizer.load_state_dict(model_checkpoint['optimizer_state_dict'])
     

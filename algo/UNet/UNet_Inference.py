@@ -169,6 +169,7 @@ def run_inference (inference_dataloader, model_for_prediction, patch_size, patch
             patch_loader = tio.SubjectsLoader(grid_sampler, batch_size=patch_loader_batchsize)
             aggregator = tio.inference.GridAggregator(grid_sampler)
             
+            model_for_prediction.eval()
             with torch.no_grad(): 
                 for patches_batch in tqdm.tqdm(patch_loader, desc="Running Inference"):
                     input_tensor = patches_batch["swi_image"][tio.DATA].to(device)

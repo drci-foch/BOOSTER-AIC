@@ -123,12 +123,16 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
             images = patches_batch["swi_image"][tio.DATA]
             gt_masks = patches_batch["thrombus_label"][tio.DATA]
             images, gt_masks = images.to(device), gt_masks.to(device)
+            del patches_batch
+            torch.cuda.empty_cache()
             
             optimizer.zero_grad()
             predicted_mask = model(images)[0]
             train_loss = loss(predicted_mask, gt_masks)
             train_loss.backward()
             optimizer.step()
+            del predicted_mask
+            torch.cuda.empty_cache()
             train_loss_value += train_loss.item()
         
         train_loss_value /= len(train_patches_loader)
@@ -141,9 +145,13 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
                 images = patches_batch["swi_image"][tio.DATA]
                 gt_masks = patches_batch["thrombus_label"][tio.DATA]
                 images, gt_masks = images.to(device), gt_masks.to(device)
+                del patches_batch
+                torch.cuda.empty_cache()
                 
                 predicted_mask = model(images)[0]
                 val_loss = loss(predicted_mask, gt_masks)
+                del predicted_mask
+                torch.cuda.empty_cache()
                 val_loss_value += val_loss.item()
 
         val_loss_value /= len(val_patches_loader)
@@ -162,6 +170,7 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
             ax.ticklabel_format(axis="y", style="scientific", scilimits=(0,0))
             ax.legend()
             plt.show()
+            plt.close(fig)
         
         if save_checkpoint_flag:
             save_checkpoint(model, optimizer, epoch, loss, save_checkpoint_location)

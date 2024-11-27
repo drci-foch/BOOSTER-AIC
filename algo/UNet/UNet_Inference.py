@@ -157,9 +157,14 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
 
 # Inference Function
 
-def run_inference (inference_dataloader, model_for_prediction, patch_size, patch_overlap, inference_dir_location, return_logits=True, patch_loader_batchsize=10, logit_threshold=0.5):
+def run_inference (inference_dataloader, model_for_prediction, optimizer_for_prediction, checkpoint_location, patch_size, patch_overlap, inference_dir_location, return_logits=True, patch_loader_batchsize=10, logit_threshold=0.5):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    model_for_prediction_checkpoint = torch.load(checkpoint_location, map_location=device, weights_only=False)
+    model_for_prediction.load_state_dict(model_for_prediction_checkpoint["model_state_dict"])
+    # Send model to device before loading optimizer to maintain tensor location consistency
     model_for_prediction = model_for_prediction.to(device)
+    optimizer_for_prediction.load_state_dict(model_for_prediction_checkpoint["optimizer_state_dict"])
 
     whole_image_predictions = []
 

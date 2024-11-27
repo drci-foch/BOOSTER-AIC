@@ -107,6 +107,7 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
     if load_from_checkpoint:
         model_checkpoint = torch.load(load_checkpoint_location, map_location=device, weights_only=False)
         model.load_state_dict(model_checkpoint["model_state_dict"])
+        # Send model to device before loading optimizer to maintain tensor location consistency
         model.to(device)
         optimizer.load_state_dict(model_checkpoint["optimizer_state_dict"])
     else:

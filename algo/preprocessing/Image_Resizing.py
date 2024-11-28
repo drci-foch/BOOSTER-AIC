@@ -92,7 +92,6 @@ def resize_images_to_moving_reference (source_path, target_path, ref_folder_path
         raise SystemExit("Number of images to resize and their reference is different.")
     
     for source_file, ref_file in zip(nifti_files_source, nifti_files_ref):
-        source_split_name = source_file.split("_")
         source_file_path = os.path.join(source_path, source_file)
         ref_file_path = os.path.join(ref_folder_path, ref_file)
 

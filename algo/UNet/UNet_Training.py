@@ -123,15 +123,20 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
         for patches_batch in tqdm.tqdm(train_patches_loader, desc=f"Training Epoch {epoch}/{num_epochs}"):
             images = patches_batch["swi_image"][tio.DATA]
             gt_masks = patches_batch["thrombus_label"][tio.DATA]
+
+            # Move data to GPU device and free RAM variable holding the initial images
             images, gt_masks = images.to(device), gt_masks.to(device)
             del patches_batch
             torch.cuda.empty_cache()
             
+            # Forward pass and optimization
             optimizer.zero_grad()
             predicted_mask = model(images)[0]
             train_loss = loss(predicted_mask, gt_masks)
             train_loss.backward()
             optimizer.step()
+
+            # Free up memory and accumulate loss
             del predicted_mask
             torch.cuda.empty_cache()
             train_loss_value += train_loss.item()
@@ -145,12 +150,17 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
             for patches_batch in tqdm.tqdm(val_patches_loader, desc=f"Validating Epoch {epoch}/{num_epochs}"):
                 images = patches_batch["swi_image"][tio.DATA]
                 gt_masks = patches_batch["thrombus_label"][tio.DATA]
+
+                # Move data to GPU device and free RAM variable holding the initial images
                 images, gt_masks = images.to(device), gt_masks.to(device)
                 del patches_batch
                 torch.cuda.empty_cache()
                 
+                # Forward pass
                 predicted_mask = model(images)[0]
                 val_loss = loss(predicted_mask, gt_masks)
+
+                # Free up memory and accumulate loss
                 del predicted_mask
                 torch.cuda.empty_cache()
                 val_loss_value += val_loss.item()
@@ -159,6 +169,7 @@ def train_model (model, loss, optimizer, train_patches_loader, val_patches_loade
         print(f"Epoch {epoch}/{num_epochs}, Validation Loss: {val_loss_value:.8f}")
 
         if display_loss:
+            # Display plot of training and validation loss versus epoch
             train_loss_history.append(train_loss_value)
             val_loss_history.append(val_loss_value)
             fig, ax = plt.subplots(figsize=(4, 3))

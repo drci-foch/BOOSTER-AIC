@@ -37,6 +37,8 @@ def logit_to_binary_mask(tensor, threshold=0.5):
     return (mask_tensor >= threshold).float()
 
 def restore_inference_original_size (prediction_list, original_img_dir):
+    # Function to restore inferred image from a padded version to the original dimension as found in original_img_dir.
+    # Images are padded at inference time inside a batch to ensure that the batch has identical dimensions, i.e. the dimension of the largest image in the batch.
     return [torch.squeeze(
         remove_padding_from_tensor(prediction, nib.load(os.path.join(original_img_dir, original_file)).shape)
         )
@@ -157,7 +159,7 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
 
 # Inference Function
 
-def run_inference (inference_dataloader, model_for_prediction, optimizer_for_prediction, checkpoint_location, patch_size, patch_overlap, inference_dir_location, return_logits=True, patch_loader_batchsize=10, logit_threshold=0.5):
+def run_inference (inference_dataloader, model_for_prediction, optimizer_for_prediction, checkpoint_location, patch_size, patch_overlap, inference_dir_location, channel_list, return_logits=True, patch_loader_batchsize=10, logit_threshold=0.5):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     model_for_prediction_checkpoint = torch.load(checkpoint_location, map_location=device, weights_only=False)
@@ -170,6 +172,7 @@ def run_inference (inference_dataloader, model_for_prediction, optimizer_for_pre
 
     for batch in inference_dataloader:
         for subject in batch:
+            # Prepare a grid of patches on which inference will be run and then aggregated to form a whole image.
             grid_sampler = tio.inference.GridSampler(subject, patch_size, patch_overlap)
             patch_loader = tio.SubjectsLoader(grid_sampler, batch_size=patch_loader_batchsize)
             aggregator = tio.inference.GridAggregator(grid_sampler)
@@ -177,9 +180,16 @@ def run_inference (inference_dataloader, model_for_prediction, optimizer_for_pre
             model_for_prediction.eval()
             with torch.no_grad(): 
                 for patches_batch in tqdm.tqdm(patch_loader, desc="Running Inference"):
-                    input_tensor = patches_batch["swi_image"][tio.DATA].to(device)
+                    
+                    # Load all channels of the image batch
+                    channels = [patches_batch[channel_key][tio.DATA] for channel_key in channel_list]
+                    input_tensor = torch.cat(channels, dim=1).to(device)
+
+                    # Extract locations of the patches and logits associated to each voxel
                     locations = patches_batch[tio.LOCATION]
                     logits = model_for_prediction(input_tensor)[0]
+
+                    # Once work has been performed on GPU device, send logit tensor back to CPU for assembly
                     logits = logits.cpu()
                     if return_logits == False:
                         labels = logit_to_binary_mask(logits, threshold=logit_threshold)

@@ -6,7 +6,8 @@ import pandas as pd
 export_dir = "E:\\Data_Booster\\data_ETIS_781\\Volume_Calculation"
 mask_dir = "E:\\Data_Booster\\data_ETIS_781\\MASK"
 swi_dir = "E:\\Data_Booster\\data_ETIS_781\\SWI"
-volume_filename = "MaskVolume_781.csv"
+#volume_filename = "MaskVolume_781.csv"
+volume_filename = "MaskVolume_781.xlsx"
 filename =[]
 voxel_dimensions = []
 volume = []
@@ -25,5 +26,6 @@ for mask, swi in zip(os.listdir(mask_dir), os.listdir(swi_dir)):
     else:
         print(f"Mismatch in voxel dimensions for file {mask}")
 
-volume_dataframe = pd.DataFrame(data={"Voxel Dimensions [X,Y,Z] (mm)":voxel_dimensions, "Volume (mm^3)":volume}, index=pd.Series(filename, name="Filename"))
-volume_dataframe.to_csv(os.path.join(export_dir, volume_filename))
+volume_dataframe = pd.DataFrame(data={"Voxel Dimensions [X Y Z] (mm)":voxel_dimensions, "Volume (mm^3)":volume}, index=pd.Series(filename, name="Filename"))
+#volume_dataframe.to_csv(os.path.join(export_dir, volume_filename))
+volume_dataframe.to_excel(os.path.join(export_dir, volume_filename))

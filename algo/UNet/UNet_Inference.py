@@ -81,7 +81,6 @@ def pad_collate_fn(batch):
 
         # Apply padding to all channels
         pad_transform = tio.Pad(padding)
-        print(subject)
         padded_images = [pad_transform(subject[channel_key]) for channel_key in channel_list]
         
         # Create a new Subject with the padded image

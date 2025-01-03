@@ -50,29 +50,41 @@ def load_prediction_masks (mask_dir):
 
 def pad_collate_fn(batch):
     # Collate function to ensure batches have the same size, that is the size of the largest image in the batch.
+
+    # Images in each channel should be resized to a reference channel, so that a mask prediction can make sense on all channels.
+    reference_channel = "swi_image"
+
     # Find the max shape in each dimension from the batch
-    max_dims = [max([subject['swi_image'][tio.DATA].shape[-3:][d] for subject in batch]) for d in range(3)]
+    max_dims = [max([subject[reference_channel][tio.DATA].shape[-3:][d] for subject in batch]) for d in range(3)]
     
     # Apply padding to each image in the batch to match the largest dimensions
     padded_subjects = []
+    
     for subject in batch:
-        subject_image = subject['swi_image'][tio.DATA]  # Get the image tensor
-        
         # Calculate how much padding is needed for each dimension
         padding = []
-        for max_dim, current_size in zip(max_dims, subject_image.shape[-3:]):
+        
+        # Padding requirement should be the same for all channels and we compute it for the reference channel in subject_images
+        for max_dim, current_size in zip(max_dims, subject[reference_channel].shape[-3:]):
             total_padding = max_dim - current_size
+            
             # Divide padding evenly across both sides
             padding_before = total_padding // 2
-            padding_after = total_padding - padding_before  # Handle the case where the difference is odd
+            
+            # Handle the case where the difference is odd
+            padding_after = total_padding - padding_before
+            
             padding.extend([padding_before, padding_after])
                 
-        # Apply padding to the image
+        # List all channels, assuming each channel is identified with the ending "_image" in the subject.
+        channel_list = [subject[channel_key] for channel_key in subject if channel_key.endswith("_image")]
+
+        # Apply padding to all channels
         pad_transform = tio.Pad(padding)
-        padded_image = pad_transform(subject['swi_image'])
+        padded_images = [pad_transform(subject[channel_key]) for channel_key in channel_list]
         
         # Create a new Subject with the padded image
-        padded_subject = tio.Subject(swi_image=tio.ScalarImage(tensor=padded_image[tio.DATA]))
+        padded_subject = tio.Subject(**{channel: tio.ScalarImage(tensor=padded_image[tio.DATA]) for channel, padded_image in zip(channel_list, padded_images)})
         padded_subjects.append(padded_subject)
     
     return padded_subjects

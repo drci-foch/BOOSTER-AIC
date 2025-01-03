@@ -69,7 +69,7 @@ def load_subjectsdataset_1channel (swi_dir, thrombus_labels_dir, foreground_labe
     
     for swi_file, thrombus_label_file, foreground_label_file in zip(swi_list, thrombus_labels_list, foreground_labels_list):
         subject = HighToleranceSubject(
-            swi_image=tio.ScalarImage(os.path.join(swi_dir, swi_file)),
+            swi_image = tio.ScalarImage(os.path.join(swi_dir, swi_file)),
             thrombus_label = tio.LabelMap(os.path.join(thrombus_labels_dir, thrombus_label_file)),
             foreground_label = tio.LabelMap(os.path.join(foreground_labels_dir, foreground_label_file)),
             subject_number = "_".join(swi_file.split("_")[:2])
@@ -90,8 +90,8 @@ def load_subjectsdataset_2channel (swi_dir, tof_dir, thrombus_labels_dir, foregr
     
     for swi_file, tof_file, thrombus_label_file, foreground_label_file in zip(swi_list, tof_list, thrombus_labels_list, foreground_labels_list):
         subject = HighToleranceSubject(
-            swi_image=tio.ScalarImage(os.path.join(swi_dir, swi_file)),
-            tof_image=tio.ScalarImage(os.path.join(tof_dir, tof_file)),
+            swi_image = tio.ScalarImage(os.path.join(swi_dir, swi_file)),
+            tof_image = tio.ScalarImage(os.path.join(tof_dir, tof_file)),
             thrombus_label = tio.LabelMap(os.path.join(thrombus_labels_dir, thrombus_label_file)),
             foreground_label = tio.LabelMap(os.path.join(foreground_labels_dir, foreground_label_file)),
             subject_number = "_".join(swi_file.split("_")[:2])

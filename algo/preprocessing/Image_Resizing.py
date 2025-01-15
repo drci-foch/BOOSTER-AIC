@@ -120,4 +120,27 @@ def resize_images_to_moving_reference (source_path, target_path, ref_folder_path
         
         new_img_name = ".".join(split_name)
         normalized_image.save(os.path.join(target_path, new_img_name))
-        print("Processed image ", source_file) 
+        print("Processed image ", source_file)
+
+def transform_images_to_canonical (source_path, target_path, image_is_label=False, modification_string="", inclusion_string=""):
+    # Transform a folder of images to canonical frame of reference as defined by torchio ToCanonical.
+
+    # Select files to process.
+    nifti_files_source = [file for file in os.listdir(source_path) if (file.endswith('.nii.gz')) & (inclusion_string in file)]
+    for source_file in nifti_files_source:
+        source_file_path = os.path.join(source_path, source_file)
+
+        if image_is_label:
+            image_to_resize = tio.LabelMap(source_file_path)
+            normalized_image = tio.ToCanonical(image_to_resize)
+        else:
+            image_to_resize = tio.ScalarImage(source_file_path)
+            normalized_image = tio.ToCanonical(image_to_resize)
+        
+        split_name = source_file.split(".")
+        if modification_string != "":
+            split_name[0] = split_name[0] + "_" + modification_string
+        
+        new_img_name = ".".join(split_name)
+        normalized_image.save(os.path.join(target_path, new_img_name))
+        print("Processed image ", source_file)

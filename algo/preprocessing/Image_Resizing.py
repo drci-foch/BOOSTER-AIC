@@ -132,10 +132,10 @@ def transform_images_to_canonical (source_path, target_path, image_is_label=Fals
 
         if image_is_label:
             image_to_resize = tio.LabelMap(source_file_path)
-            normalized_image = tio.ToCanonical(image_to_resize)
+            normalized_image = tio.ToCanonical()(image_to_resize)
         else:
             image_to_resize = tio.ScalarImage(source_file_path)
-            normalized_image = tio.ToCanonical(image_to_resize)
+            normalized_image = tio.ToCanonical()(image_to_resize)
         
         split_name = source_file.split(".")
         if modification_string != "":

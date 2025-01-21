@@ -1,5 +1,4 @@
 import os
-import glob
 import nibabel as nib
 import numpy as np
 import scipy
@@ -49,9 +48,9 @@ def label_thrombus_and_foreground_voxels (array, sample_filename, label_director
     # Perform foreground labeling, then fetches thrombus label and labels thrombus on the foreground
     labeled_array = label_foreground_voxels(array, **kwargs)
 
-    sample_number = "_".join(sample_filename.split("_")[:2])
-    label_filename = glob.glob(os.path.join(label_directory, sample_number + "*"))[0]
-    label_mask = nib.load(label_filename).get_fdata().astype("bool")
+    sample_number = "-".join(sample_filename.split("_")[1].split("-")[:2])
+    label_filename = [filename for filename in os.listdir(label_directory) if sample_number in filename][0]
+    label_mask = nib.load(os.path.join(label_directory, label_filename)).get_fdata().astype("bool")
 
     labeled_array[label_mask] = thrombus_label
     

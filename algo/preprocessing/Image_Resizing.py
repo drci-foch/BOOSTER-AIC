@@ -1,5 +1,6 @@
 import nibabel as nib
 import torchio as tio
+import ants
 import os
 
 def tuple_product(*args):
@@ -120,6 +121,35 @@ def resize_images_to_moving_reference (source_path, target_path, ref_folder_path
         
         new_img_name = ".".join(split_name)
         normalized_image.save(os.path.join(target_path, new_img_name))
+        print("Processed image ", source_file)
+
+def register_mask_to_moving_reference (mask_source_path, target_path, ref_folder_path, atlas_path, registration_type="AffineFast", interpolation_method="nearestNeighbor", modification_string="", inclusion_string=""):
+    # Register a folder of images according to a reference of another folder of images. Then perform the registration on a list of masks to obtain the registered mask.
+    # There must be a 1-to-1 correspondence between the registered and reference folder.
+
+    # Select files to process.
+    nifti_files_source = [file for file in os.listdir(mask_source_path) if (file.endswith('.nii.gz')) & (inclusion_string in file)]
+    nifti_files_ref = [file for file in os.listdir(ref_folder_path) if (file.endswith('.nii.gz')) & (inclusion_string in file)]
+
+    if len(nifti_files_source) != len(nifti_files_ref):
+        raise SystemExit("Number of images to resize and their reference is different.")
+    
+    for source_file, ref_file in zip(nifti_files_source, nifti_files_ref):
+        source_file_path = os.path.join(mask_source_path, source_file)
+        ref_file_path = os.path.join(ref_folder_path, ref_file)
+
+        atlas_image = ants.image_read(atlas_path)
+        atlas_mask = ants.image_read(source_file_path)
+        target_image = ants.image_read(ref_file_path)
+        registration_results = ants.registration(fixed=target_image, moving=atlas_image, type_of_transform=registration_type)
+        transformed_mask = ants.apply_transforms(fixed=target_image, moving=atlas_mask, transformlist=registration_results["fwdtransforms"], interpolator=interpolation_method)
+
+        split_name = source_file.split(".")
+        if modification_string != "":
+            split_name[0] = split_name[0] + "_" + modification_string
+        
+        new_img_name = ".".join(split_name)
+        ants.image.write(transformed_mask, os.path.join(target_path, new_img_name))
         print("Processed image ", source_file)
 
 def transform_images_to_canonical (source_path, target_path, image_is_label=False, modification_string="", inclusion_string=""):

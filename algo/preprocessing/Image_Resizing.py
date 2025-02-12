@@ -149,7 +149,7 @@ def register_mask_to_moving_reference (mask_source_path, target_path, ref_folder
             split_name[0] = split_name[0] + "_" + modification_string
         
         new_img_name = ".".join(split_name)
-        ants.image.write(transformed_mask, os.path.join(target_path, new_img_name))
+        ants.image_write(transformed_mask, os.path.join(target_path, new_img_name))
         print("Processed image ", source_file)
 
 def transform_images_to_canonical (source_path, target_path, image_is_label=False, modification_string="", inclusion_string=""):
